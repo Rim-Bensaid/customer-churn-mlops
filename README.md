@@ -6,66 +6,54 @@ Ce projet consiste à développer et industrialiser un système de Machine Learn
 
 L'objectif est d'identifier les clients susceptibles de résilier leur abonnement afin d'aider l'entreprise à mettre en place des actions de fidélisation.
 
-Le projet couvre les principales étapes d'un pipeline MLOps classique :
-
-- Exploration et préparation des données.
-- Entraînement et évaluation de plusieurs modèles.
-- Suivi des expériences avec MLflow.
-- Versionnement des données avec DVC.
-- Enregistrement et promotion des modèles.
-- Déploiement d'une API avec FastAPI.
-- Monitoring des requêtes et des prédictions.
-- Tests automatisés et intégration continue avec GitHub Actions.
+Le projet couvre les principales étapes d'un pipeline MLOps : préparation des données, entraînement, évaluation, suivi des expériences, gestion des modèles, déploiement d'une API et visualisation des résultats.
 
 ## 2. Dataset
 
-Le projet utilise le dataset **Telco Customer Churn**, fourni par IBM.
+Le projet utilise le dataset **IBM Telco Customer Churn**.
 
-- Nombre de lignes : 7 043.
-- Nombre de colonnes initiales : 21.
-- Variable cible : `Churn`.
-- Classes : `Yes` (désabonnement) et `No` (absence de désabonnement).
+- 7 043 clients
+- 21 colonnes initiales
+- Variable cible : `Churn`
+- 5 174 clients non désabonnés
+- 1 869 clients désabonnés
 
-Le fichier original est conservé dans `data/raw/`.
-
-La préparation est réalisée avec `src/data/preprocess.py`.
-
-Les 11 valeurs manquantes de `TotalCharges` sont remplacées par 0, car elles correspondent à des clients ayant une ancienneté (`tenure`) égale à 0 et une valeur `Churn` égale à `No`.
-
-La colonne `customerID` est supprimée.
-
-Les données sont ensuite divisées en deux ensembles :
-
-- Entraînement : 5 634 lignes.
-- Test : 1 409 lignes.
-
-La séparation est stratifiée afin de conserver la proportion des classes.
-
-Le prétraitement des variables est intégré dans un pipeline Scikit-learn et ajusté sur les données d'entraînement.
+Les données ont été nettoyées, puis divisées en deux ensembles :
+- Entraînement : 5 634 observations
+- Test : 1 409 observations
 
 ## 3. Technologies utilisées
 
-| Technologie | Utilisation |
-|---|---|
-| Python | Développement |
-| Pandas et NumPy | Manipulation des données |
-| Scikit-learn | Prétraitement et entraînement |
-| MLflow | Suivi des expériences et registre des modèles |
-| DVC | Versionnement des données et pipeline |
-| FastAPI | API de prédiction |
-| Pytest | Tests automatisés |
-| Ruff | Contrôle de la qualité du code |
-| Git et GitHub | Versionnement du code |
-| GitHub Actions | Intégration continue |
+- Python
+- Pandas et NumPy
+- Scikit-learn
+- MLflow
+- DVC
+- FastAPI
+- Streamlit
+- Pytest
+- Ruff
+- Git et GitHub Actions
 
 ## 4. Architecture du projet
 
 ```text
 customer-churn-mlops/
 │
+├── api/
+│   └── main.py
+│
+├── app/
+│   └── streamlit_app.py
+│
 ├── data/
 │   ├── raw/
 │   └── processed/
+│
+├── models/
+│
+├── reports/
+│   └── monitoring/
 │
 ├── src/
 │   ├── data/
@@ -82,182 +70,109 @@ customer-churn-mlops/
 │   └── monitoring/
 │       └── monitor.py
 │
-├── api/
-│   └── main.py
-│
 ├── tests/
-│   ├── test_api.py
-│   └── test_monitoring.py
-│
-├── models/
-├── reports/
-├── configs/
-├── dashboard/
 │
 ├── .github/
 │   └── workflows/
 │       └── ci.yml
 │
-├── .dvc/
 ├── dvc.yaml
 ├── dvc.lock
 ├── requirements.txt
-├── README.md
-└── .gitignore
+└── README.md
 ```
 
 ## 5. Installation
 
-### Cloner le dépôt
+Cloner le dépôt :
 
-```powershell
+```bash
 git clone https://github.com/Rim-Bensaid/customer-churn-mlops.git
 cd customer-churn-mlops
 ```
 
-### Créer un environnement virtuel
+Créer et activer l'environnement virtuel sous Windows :
 
 ```powershell
 python -m venv .venv
+.venv\Scripts\activate
 ```
 
-### Activer l'environnement
+Installer les dépendances :
 
 ```powershell
-.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
 ```
 
-### Installer les dépendances
+Le fichier `requirements.txt` doit notamment inclure `streamlit` et `requests` pour l'interface graphique.
 
-```powershell
-python -m pip install -r requirements.txt
-```
+## 6. Pipeline MLOps
 
-**Important concernant DVC :**
+Le pipeline comprend trois étapes principales :
 
-Le fichier de données original doit être disponible localement dans `data/raw/` pour exécuter le pipeline. Le projet utilise actuellement un stockage DVC local.
+1. Prétraitement des données.
+2. Entraînement des modèles.
+3. Évaluation et comparaison des performances.
 
-## 6. Exécution du pipeline
-
-Toutes les commandes suivantes doivent être exécutées depuis la racine du projet.
-
-### Préparation des données
-
-```powershell
-python src/data/preprocess.py
-```
-
-### Entraînement des modèles
-
-```powershell
-python src/models/train.py
-```
-
-Trois modèles sont entraînés :
-
-- Logistic Regression.
-- Random Forest.
-- Gradient Boosting.
-
-### Évaluation des modèles
-
-```powershell
-python src/models/evaluate.py
-```
-
-Les métriques et les matrices de confusion sont enregistrées dans le dossier `reports/`.
-
-### Reproduire le pipeline avec DVC
+Les étapes sont orchestrées avec DVC :
 
 ```powershell
 dvc repro
 ```
 
-Pour vérifier l'état du pipeline :
+Le suivi des expériences et des métriques est réalisé avec MLflow.
 
-```powershell
-dvc status
-```
+## 7. Comparaison des modèles
 
-### Enregistrement du modèle
+Trois algorithmes ont été entraînés et évalués :
 
-```powershell
-python src/models/register_model.py
-```
-
-Le modèle sélectionné est enregistré dans MLflow sous le nom :
-
-`customer-churn-model`
-
-L'enregistrement crée une version candidate associée à l'alias `candidate`.
-
-### Promotion du modèle
-
-```powershell
-python src/models/promote_model.py
-```
-
-Le script vérifie les seuils de qualité définis :
-
-- Recall supérieur ou égal à 0,75.
-- F1-score supérieur ou égal à 0,60.
-- ROC-AUC supérieur ou égal à 0,80.
-
-Lorsque les conditions sont satisfaites, le modèle est promu avec l'alias `champion`.
-
-## 7. Résultats de l'évaluation
-
-Trois algorithmes ont été comparés sur l'ensemble de test :
+- Logistic Regression
+- Random Forest
+- Gradient Boosting
 
 | Modèle | Accuracy | Precision | Recall | F1-score | ROC-AUC |
 |---|---:|---:|---:|---:|---:|
-| Logistic Regression | 73,81 % | 50,43 % | 78,34 % | 61,36 % | 84,16 % |
-| Random Forest | 77,00 % | 55,90 % | 63,37 % | 59,40 % | 82,25 % |
-| Gradient Boosting | 80,27 % | 66,55 % | 51,60 % | 58,13 % | 84,33 % |
+| Logistic Regression | 73.81 % | 50.43 % | 78.34 % | 61.36 % | 84.16 % |
+| Random Forest | 77.00 % | 55.90 % | 63.37 % | 59.40 % | 82.25 % |
+| Gradient Boosting | 80.27 % | 66.55 % | 51.60 % | 58.13 % | 84.33 % |
 
-La régression logistique a été retenue comme modèle final grâce à son Recall de 78,34 % et à son F1-score de 61,36 %.
+La **Logistic Regression** a été retenue comme modèle champion grâce à son Recall de 78.34 % et son F1-score de 61.36 %.
 
-Le Recall est particulièrement important dans ce projet, car il mesure la proportion de clients qui résilient effectivement leur abonnement et que le modèle parvient à identifier.
+Ce choix privilégie l'identification des clients susceptibles de se désabonner.
 
-La précision obtenue est de 50,43 %.
+## 8. Gestion des modèles avec MLflow
 
-## 8. Suivi des expériences avec MLflow
-
-MLflow est utilisé pour :
+MLflow permet de :
 
 - Suivre les expériences d'entraînement.
 - Enregistrer les paramètres et les métriques.
-- Conserver les informations relatives aux modèles.
-- Gérer les versions dans le registre des modèles.
-- Identifier les modèles candidats et le modèle champion.
+- Comparer les modèles.
+- Enregistrer les modèles dans le Model Registry.
+- Gérer les versions et les alias.
 
-L'expérience utilisée est :
-
-`customer-churn-prediction`
-
-Le modèle enregistré dans le registre est :
+Le modèle retenu est enregistré sous le nom :
 
 `customer-churn-model`
 
-Pour démarrer l'interface MLflow :
+Son alias de production est :
 
-```powershell
-mlflow ui --backend-store-uri sqlite:///mlflow.db
-```
+`champion`
 
-Puis ouvrir :
+## 9. API FastAPI
 
-http://127.0.0.1:5000
+Une API REST développée avec FastAPI permet d'utiliser le modèle champion pour effectuer des prédictions.
 
-## 9. API de prédiction avec FastAPI
+Les endpoints disponibles sont :
 
-Une API REST a été développée avec FastAPI afin d'exposer le modèle sélectionné.
+| Endpoint | Méthode | Description |
+|---|---|---|
+| `/` | GET | Page d'accueil |
+| `/health` | GET | Vérification de l'état de l'API et du modèle |
+| `/predict` | POST | Prédiction du désabonnement |
 
-L'API charge le modèle champion depuis MLflow à l'aide de l'URI :
+L'API charge le modèle enregistré dans MLflow avec l'alias `champion`.
 
-`models:/customer-churn-model@champion`
-
-### Démarrer l'API
+Pour démarrer l'API :
 
 ```powershell
 uvicorn api.main:app --reload
@@ -265,72 +180,58 @@ uvicorn api.main:app --reload
 
 Documentation interactive :
 
-http://127.0.0.1:8000/docs
+`http://127.0.0.1:8000/docs`
 
-### Endpoints disponibles
+## 10. Dashboard Streamlit
 
-| Méthode | Endpoint | Description |
-|---|---|---|
-| GET | `/` | Présentation de l'API |
-| GET | `/health` | Vérification de l'état de l'API et du modèle |
-| POST | `/predict` | Prédiction du désabonnement |
+Une interface graphique développée avec Streamlit permet d'interagir avec le système de prédiction et de visualiser les résultats.
 
-L'endpoint `/predict` reçoit les caractéristiques d'un client et retourne une prédiction de désabonnement ainsi que la probabilité associée.
+Elle comprend trois espaces :
 
-## 10. Monitoring
+- **Prédiction :** saisie des informations d'un client et affichage du résultat de prédiction ainsi que de la probabilité de désabonnement.
+- **Visualisation des modèles :** comparaison des trois modèles selon les métriques Accuracy, Precision, Recall, F1-score et ROC-AUC.
+- **Modèle champion :** présentation du modèle retenu, de sa version MLflow et de ses performances.
 
-Un module de monitoring enregistre les informations relatives aux requêtes et aux prédictions.
+Le dashboard communique avec l'API FastAPI pour effectuer les prédictions.
 
-Les informations suivies comprennent :
-
-- Méthode HTTP et endpoint.
-- Code de réponse HTTP.
-- Temps de réponse.
-- Classe prédite (`Yes` ou `No`).
-- Probabilité de prédiction.
-- Statut de l'opération et erreurs éventuelles.
-
-Les fichiers de suivi sont générés dans :
-
-```text
-reports/monitoring/
-├── api_requests.csv
-└── predictions.csv
-```
-
-Le monitoring permet de suivre le fonctionnement de l'API et de conserver un historique des requêtes et des prédictions.
-
-## 11. Tests et intégration continue
-
-Les tests automatisés sont réalisés avec Pytest.
-
-Pour exécuter tous les tests :
+Pour démarrer Streamlit, ouvrir un deuxième terminal et exécuter :
 
 ```powershell
-python -m pytest tests -v
+streamlit run app/streamlit_app.py
 ```
 
-Les tests couvrent notamment :
+Interface accessible à l'adresse :
 
-- Le fonctionnement des endpoints.
-- La vérification de l'état de l'API.
-- Les prédictions valides.
-- Le rejet des données invalides.
-- L'enregistrement des requêtes.
-- L'enregistrement des prédictions et des erreurs.
+`http://localhost:8501`
 
-La qualité du code est vérifiée avec Ruff :
+## 11. Monitoring
 
-```powershell
-ruff check src api tests
-```
+Un système de monitoring permet de suivre l'activité de l'API et les prédictions effectuées.
 
-GitHub Actions exécute automatiquement les vérifications de qualité du code et les tests selon les événements configurés dans le workflow CI.
+Les informations enregistrées comprennent notamment :
 
-## 12. Conclusion
+- Les requêtes reçues.
+- Les codes de réponse HTTP.
+- Le temps de réponse.
+- Les résultats des prédictions.
+- Les éventuelles erreurs.
 
-Ce projet met en œuvre un pipeline MLOps classique allant de la préparation des données jusqu'à l'exposition d'un modèle de prédiction via une API.
+Les fichiers de suivi sont enregistrés dans `reports/monitoring/`.
 
-Il combine plusieurs outils complémentaires pour assurer le suivi des expériences, le versionnement des données, la gestion des versions du modèle, les tests automatisés et le monitoring technique.
+## 12. Tests et intégration continue
 
-La régression logistique a été retenue et enregistrée dans MLflow comme modèle champion, puis intégrée à l'API FastAPI pour réaliser des prédictions.
+Les tests automatisés sont réalisés avec Pytest afin de vérifier le fonctionnement de l'API et du monitoring.
+
+Ruff est utilisé pour contrôler la qualité du code.
+
+GitHub Actions automatise l'exécution des contrôles :
+
+1. Installation des dépendances.
+2. Vérification du code avec Ruff.
+3. Exécution des tests avec Pytest.
+
+## 13. Conclusion
+
+Ce projet met en œuvre un pipeline MLOps complet pour la prédiction du désabonnement des clients, depuis la préparation des données jusqu'à la mise à disposition d'une interface de prédiction.
+
+L'association de DVC, MLflow, FastAPI et Streamlit permet de structurer le cycle de vie du modèle, de suivre ses performances et de rendre ses prédictions accessibles à travers une interface graphique.
