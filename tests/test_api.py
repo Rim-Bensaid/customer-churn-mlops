@@ -1,7 +1,20 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from api.main import app
+import api.main as api_module
+
+
+# Faux modèle utilisé uniquement pendant les tests
+class FakeModel:
+
+    classes_ = [0, 1]
+
+    def predict(self, data):
+        return [0] * len(data)
+
+    def predict_proba(self, data):
+        return [[0.8, 0.2] for _ in range(len(data))]
+
 
 # Exemple de données client valides
 CUSTOMER_DATA = {
@@ -26,19 +39,28 @@ CUSTOMER_DATA = {
     "PaymentMethod": "Electronic check"
 }
 
-@pytest.fixture(scope="module")
-def client():
-    # Le modèle est chargé pendant le démarrage de l'application.
-    with TestClient(app) as test_client:
+@pytest.fixture
+def client(monkeypatch):
+
+    # Remplacer le chargement MLflow par le faux modèle
+    monkeypatch.setattr(
+        api_module.mlflow.sklearn,
+        "load_model",
+        lambda model_uri: FakeModel()
+    )
+
+    with TestClient(api_module.app) as test_client:
         yield test_client
 
 def test_home(client):
+
     response = client.get("/")
 
     assert response.status_code == 200
     assert response.json()["status"] == "running"
 
 def test_health(client):
+
     response = client.get("/health")
 
     assert response.status_code == 200
@@ -46,10 +68,8 @@ def test_health(client):
     assert response.json()["model_status"] == "loaded"
 
 def test_predict_valid_customer(client):
-    response = client.post("/predict", json=CUSTOMER_DATA)
 
-    print("\nRéponse API :", response.status_code)
-    print("Détail :", response.text)
+    response = client.post("/predict", json=CUSTOMER_DATA)
 
     assert response.status_code == 200
 
@@ -60,20 +80,17 @@ def test_predict_valid_customer(client):
     assert "message" in result
 
 def test_predict_invalid_customer(client):
+
     invalid_data = CUSTOMER_DATA.copy()
     invalid_data["tenure"] = -5
 
     response = client.post("/predict", json=invalid_data)
 
-    print("\nRéponse API :", response.status_code)
-    print("Détail :", response.text)
-
     assert response.status_code == 422
 
 def test_predict_invalid_category(client):
-    invalid_data = CUSTOMER_DATA.copy()
 
-    # Catégorie qui n'existe pas dans le dataset
+    invalid_data = CUSTOMER_DATA.copy()
     invalid_data["Contract"] = "Annual"
 
     response = client.post("/predict", json=invalid_data)
