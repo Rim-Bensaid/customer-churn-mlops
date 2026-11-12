@@ -1,20 +1,15 @@
+import time
 from contextlib import asynccontextmanager
 from typing import Literal
+
 import mlflow
 import mlflow.sklearn
 import pandas as pd
-
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, Field
 
-import time
+from src.monitoring.monitor import log_api_request, log_prediction
 
-from fastapi import Request
-
-from src.monitoring.monitor import (
-    log_api_request,
-    log_prediction
-)
 # Configuration MLflow
 TRACKING_URI = "sqlite:///mlflow.db"
 MODEL_URI = "models:/customer-churn-model@candidate"
@@ -227,7 +222,7 @@ def predict_churn(customer: CustomerData):
             "message": message
         }
 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
 
         # Enregistrement de l'erreur
         log_prediction(
@@ -237,5 +232,5 @@ def predict_churn(customer: CustomerData):
 
         raise HTTPException(
             status_code=500,
-            detail=f"Erreur pendant la prédiction : {str(e)}"
+            detail=f"Erreur pendant la prédiction : {e!s}"
         )

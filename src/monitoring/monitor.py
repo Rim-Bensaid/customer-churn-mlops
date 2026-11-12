@@ -1,5 +1,5 @@
 import csv
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 # Dossier racine du projet
@@ -39,7 +39,7 @@ def log_api_request(method, endpoint, status_code, latency_ms):
     ]
 
     row = {
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "method": method,
         "endpoint": endpoint,
         "status_code": status_code,
@@ -61,7 +61,7 @@ def log_prediction(prediction=None, probability=None,
     ]
 
     row = {
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "prediction": prediction,
         "churn_probability": probability,
         "status": status,

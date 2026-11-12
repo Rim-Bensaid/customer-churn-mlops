@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -7,7 +9,7 @@ import api.main as api_module
 # Faux modèle utilisé uniquement pendant les tests
 class FakeModel:
 
-    classes_ = [0, 1]
+    classes_: ClassVar[list[int]] = [0, 1]
 
     def predict(self, data):
         return [0] * len(data)

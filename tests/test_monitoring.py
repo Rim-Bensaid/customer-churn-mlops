@@ -2,6 +2,7 @@ import csv
 
 from src.monitoring import monitor
 
+
 def test_log_api_request(tmp_path, monkeypatch):
     # Rediriger les fichiers vers un dossier temporaire
     requests_file = tmp_path / "api_requests.csv"
