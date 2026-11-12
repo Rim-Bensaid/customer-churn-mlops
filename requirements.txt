@@ -13,3 +13,4 @@ pytest
 ruff
 pyyaml
 joblib
+httpx2
