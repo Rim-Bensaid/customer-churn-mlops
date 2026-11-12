@@ -29,3 +29,5 @@ mlartifacts/
 
 # Secrets
 .env
+# Journaux de monitoring
+reports/monitoring/*.csv

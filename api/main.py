@@ -12,7 +12,7 @@ from src.monitoring.monitor import log_api_request, log_prediction
 
 # Configuration MLflow
 TRACKING_URI = "sqlite:///mlflow.db"
-MODEL_URI = "models:/customer-churn-model@candidate"
+MODEL_URI = "models:/customer-churn-model@champion"
 
 mlflow.set_tracking_uri(TRACKING_URI)
 

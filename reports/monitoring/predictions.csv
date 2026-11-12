@@ -1,9 +1,0 @@
-timestamp,prediction,churn_probability,status,error
-2026-11-11T23:59:45.368861+00:00,Yes,0.9367,success,
-2026-11-12T00:00:49.045076+00:00,No,0.0141,success,
-2026-11-12T00:53:05.612912+00:00,,,error,"columns are missing: {'tenure', 'SeniorCitizen', 'TotalCharges', 'MonthlyCharges'}"
-2026-11-12T00:53:05.662165+00:00,,,error,"columns are missing: {'tenure', 'SeniorCitizen', 'TotalCharges', 'MonthlyCharges'}"
-2026-11-12T00:58:41.620016+00:00,,,error,"columns are missing: {'SeniorCitizen', 'tenure', 'TotalCharges', 'MonthlyCharges'}"
-2026-11-12T00:58:41.669095+00:00,,,error,"columns are missing: {'SeniorCitizen', 'tenure', 'TotalCharges', 'MonthlyCharges'}"
-2026-11-12T01:04:51.349758+00:00,Yes,0.8692,success,
-2026-11-12T01:07:37.062446+00:00,Yes,0.8692,success,
