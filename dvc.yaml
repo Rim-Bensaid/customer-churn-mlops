@@ -1,0 +1,37 @@
+stages:
+  preprocess:
+    cmd: python src/data/preprocess.py
+    deps:
+      - src/data/preprocess.py
+      - data/raw/Telco-Customer-Churn.csv
+    outs:
+      - data/processed/train.csv
+      - data/processed/test.csv
+      - reports/preprocessing_report.json
+
+  train:
+    cmd: python src/models/train.py
+    deps:
+      - src/models/train.py
+      - data/processed/train.csv
+      - data/processed/test.csv
+    outs:
+      - models/logistic_regression.joblib
+      - models/random_forest.joblib
+      - models/gradient_boosting.joblib
+      - reports/training_runs.json
+
+  evaluate:
+    cmd: python src/models/evaluate.py
+    deps:
+      - src/models/evaluate.py
+      - data/processed/test.csv
+      - models/logistic_regression.joblib
+      - models/random_forest.joblib
+      - models/gradient_boosting.joblib
+    outs:
+      - reports/evaluation_metrics.json
+      - reports/model_comparison.csv
+      - reports/confusion_matrix_logistic_regression.png
+      - reports/confusion_matrix_random_forest.png
+      - reports/confusion_matrix_gradient_boosting.png
