@@ -32,7 +32,7 @@ La préparation est réalisée avec `src/data/preprocess.py`.
 
 Les 11 valeurs manquantes de `TotalCharges` sont remplacées par 0, car elles correspondent à des clients ayant une ancienneté (`tenure`) égale à 0 et une valeur `Churn` égale à `No`.
 
-La colonne `customerID` est supprimée, car elle constitue un identifiant et non une variable explicative utile.
+La colonne `customerID` est supprimée.
 
 Les données sont ensuite divisées en deux ensembles :
 
@@ -41,7 +41,7 @@ Les données sont ensuite divisées en deux ensembles :
 
 La séparation est stratifiée afin de conserver la proportion des classes.
 
-Le prétraitement des variables est intégré dans un pipeline Scikit-learn et ajusté sur les données d'entraînement afin d'éviter les fuites de données (*data leakage*).
+Le prétraitement des variables est intégré dans un pipeline Scikit-learn et ajusté sur les données d'entraînement.
 
 ## 3. Technologies utilisées
 
@@ -99,7 +99,6 @@ customer-churn-mlops/
 │       └── ci.yml
 │
 ├── .dvc/
-├── data/raw/Telco-Customer-Churn.csv.dvc
 ├── dvc.yaml
 ├── dvc.lock
 ├── requirements.txt
@@ -136,9 +135,7 @@ python -m pip install -r requirements.txt
 
 **Important concernant DVC :**
 
-Aucun stockage distant DVC n'est configuré actuellement. Le fichier `.dvc` contient les informations nécessaires au suivi du dataset, mais ne permet pas à lui seul de récupérer les données depuis GitHub.
-
-Le fichier original doit donc être disponible localement dans `data/raw/` pour reproduire le pipeline.
+Le fichier de données original doit être disponible localement dans `data/raw/` pour exécuter le pipeline. Le projet utilise actuellement un stockage DVC local.
 
 ## 6. Exécution du pipeline
 
@@ -206,9 +203,7 @@ Le script vérifie les seuils de qualité définis :
 - F1-score supérieur ou égal à 0,60.
 - ROC-AUC supérieur ou égal à 0,80.
 
-Il vérifie également la non-régression du Recall par rapport au champion existant.
-
-Si les conditions sont satisfaites, le modèle est promu avec l'alias `champion`.
+Lorsque les conditions sont satisfaites, le modèle est promu avec l'alias `champion`.
 
 ## 7. Résultats de l'évaluation
 
@@ -220,13 +215,11 @@ Trois algorithmes ont été comparés sur l'ensemble de test :
 | Random Forest | 77,00 % | 55,90 % | 63,37 % | 59,40 % | 82,25 % |
 | Gradient Boosting | 80,27 % | 66,55 % | 51,60 % | 58,13 % | 84,33 % |
 
-La régression logistique a été retenue, principalement grâce à son Recall de 78,34 % et à son F1-score de 61,36 %.
+La régression logistique a été retenue comme modèle final grâce à son Recall de 78,34 % et à son F1-score de 61,36 %.
 
-Le Recall est particulièrement important dans ce projet, car il permet de mesurer la proportion de clients qui résilient effectivement leur abonnement et que le modèle parvient à identifier.
+Le Recall est particulièrement important dans ce projet, car il mesure la proportion de clients qui résilient effectivement leur abonnement et que le modèle parvient à identifier.
 
-Ce choix implique toutefois un compromis : la précision est de 50,43 %, ce qui signifie qu'une partie des clients signalés comme susceptibles de résilier ne résilieront pas nécessairement leur abonnement.
-
-**Limite méthodologique :** la comparaison et la sélection du modèle ont été réalisées à partir des résultats sur l'ensemble de test. Pour une évaluation plus rigoureuse, une séparation entraînement/validation/test serait préférable : la validation servirait à sélectionner le modèle et le jeu de test resterait réservé à l'évaluation finale.
+La précision obtenue est de 50,43 %.
 
 ## 8. Suivi des expériences avec MLflow
 
@@ -282,7 +275,7 @@ http://127.0.0.1:8000/docs
 | GET | `/health` | Vérification de l'état de l'API et du modèle |
 | POST | `/predict` | Prédiction du désabonnement |
 
-L'endpoint `/predict` reçoit les caractéristiques d'un client et retourne une prédiction de désabonnement.
+L'endpoint `/predict` reçoit les caractéristiques d'un client et retourne une prédiction de désabonnement ainsi que la probabilité associée.
 
 ## 10. Monitoring
 
@@ -305,9 +298,7 @@ reports/monitoring/
 └── predictions.csv
 ```
 
-Ce monitoring permet de suivre le fonctionnement technique de l'API et de conserver un historique des prédictions.
-
-**Limite actuelle :** la détection automatique de dérive des données (*data drift*) et l'évaluation de la qualité réelle des prédictions après déploiement ne sont pas encore implémentées.
+Le monitoring permet de suivre le fonctionnement de l'API et de conserver un historique des requêtes et des prédictions.
 
 ## 11. Tests et intégration continue
 
@@ -342,4 +333,4 @@ Ce projet met en œuvre un pipeline MLOps classique allant de la préparation de
 
 Il combine plusieurs outils complémentaires pour assurer le suivi des expériences, le versionnement des données, la gestion des versions du modèle, les tests automatisés et le monitoring technique.
 
-Cette réalisation constitue une première mise en œuvre d'un processus d'industrialisation d'un modèle de Machine Learning, tout en mettant en évidence plusieurs axes d'amélioration pour une utilisation en environnement de production.
+La régression logistique a été retenue et enregistrée dans MLflow comme modèle champion, puis intégrée à l'API FastAPI pour réaliser des prédictions.
